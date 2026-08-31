@@ -2,20 +2,27 @@ package com.example.myapplication.ui.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
 @Composable
 fun DetailsScreen(
     gifId: String,
-    viewModel: DetailsViewModel
+    viewModel: DetailsViewModel,
+    onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -23,19 +30,31 @@ fun DetailsScreen(
         viewModel.loadGif(gifId)
     }
 
-    when {
-        uiState.isLoading -> {
-            Text("Loading GIF $gifId...")
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(24.dp)
+    ) {
+        Button(
+            onClick = onBack,
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Text("Back")
         }
 
-        uiState.error != null -> {
-            Text("Error: ${uiState.error}")
-        }
+        when {
+            uiState.isLoading -> {
+                Text("Loading...")
+            }
 
-        uiState.gif != null -> {
-            val gif = uiState.gif!!
+            uiState.error != null -> {
+                Text("Error: ${uiState.error}")
+            }
 
-            Column {
+            uiState.gif != null -> {
+                val gif = uiState.gif!!
+
                 Text(gif.title)
 
                 AsyncImage(
@@ -47,10 +66,6 @@ fun DetailsScreen(
                     contentScale = ContentScale.Crop
                 )
             }
-        }
-
-        else -> {
-            Text("No GIF loaded")
         }
     }
 }

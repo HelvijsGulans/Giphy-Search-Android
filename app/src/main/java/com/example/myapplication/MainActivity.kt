@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
@@ -35,6 +36,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.example.myapplication.ui.details.AppNavigation
@@ -87,10 +89,13 @@ fun SearchQuery (viewModel: SearchViewModel, onGifClick: (String) -> Unit) {
     val gridState = rememberLazyGridState()
 
 
-    Column (modifier = Modifier
+    Column (
+        modifier = Modifier
         .fillMaxSize()
-        .padding(24.dp))
-    {
+        .safeDrawingPadding()
+        .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         TextField(
             value = uiState.query,
             onValueChange = {

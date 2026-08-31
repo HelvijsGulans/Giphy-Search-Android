@@ -31,7 +31,10 @@ fun AppNavigation(
 
             DetailsScreen(
                 gifId = gifId,
-                viewModel = detailsViewModel
+                viewModel = detailsViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }
