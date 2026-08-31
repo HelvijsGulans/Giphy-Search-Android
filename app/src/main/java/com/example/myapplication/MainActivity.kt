@@ -4,7 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 
@@ -14,7 +17,9 @@ import androidx.compose.ui.Modifier
 
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.TextField
@@ -29,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
@@ -36,7 +42,11 @@ import com.example.myapplication.ui.details.AppNavigation
 import com.example.myapplication.ui.details.DetailsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.search.SearchUiState
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -90,18 +100,43 @@ fun SearchContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(24.dp)
     ) {
 
-        TextField(
+        OutlinedTextField(
             value = uiState.query,
             onValueChange = onQueryChanged,
+            modifier = Modifier.fillMaxWidth(),
             label = {
                 Text("Search GIFs")
-            }
+            },
+            placeholder = {
+                Text("Search...")
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp)
         )
+
+        if (
+            uiState.query.isBlank() &&
+            uiState.gifs.isEmpty()
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Search for your favorite GIFs",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 18.sp
+                )
+            }
+        }
 
         if (uiState.isLoading) {
             CircularProgressIndicator(
@@ -119,7 +154,10 @@ fun SearchContent(
             uiState.query.isNotBlank() &&
             uiState.gifs.isEmpty()
         ) {
-            Text("No GIFs found")
+            Text(
+                text = "No GIFs found",
+                color = MaterialTheme.colorScheme.onBackground
+            )
         }
 
         LaunchedEffect(gridState) {
@@ -146,7 +184,10 @@ fun SearchContent(
             columns = GridCells.Adaptive(minSize = 140.dp),
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(vertical = 12.dp)
         ) {
             items(uiState.gifs) { gif ->
                 AsyncImage(
@@ -154,6 +195,9 @@ fun SearchContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
+                        .clip(
+                            RoundedCornerShape(12.dp)
+                        )
                         .clickable {
                             onGifClick(gif.id)
                         },
