@@ -113,17 +113,21 @@ https://developers.giphy.com/
 
 ## Screenshots
 
-### Search
+<div style="text-align: center;">
+    <img
+        src="screenshots/search_screen_dark.jpg"
+        alt="Search screen in dark mode"
+        width="260">
+    <img
+        src="screenshots/search_screen_light.jpg"
+        alt="Search screen in light mode"
+        width="260">
+    <img
+        src="screenshots/details_screen_dark.jpg"
+        alt="Details screen in dark mode"
+        width="260">
+</div>
 
-![Search screen](screenshots/search_screen_dark.jpg)
-
-### Details
-
-![Details screen](screenshots/search_screen_light.jpg)
-
-### Landscape
-
-![Landscape mode](screenshots/details_screen_dark.jpg)
 
 ## License
 
