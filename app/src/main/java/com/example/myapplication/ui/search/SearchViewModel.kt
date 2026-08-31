@@ -9,9 +9,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
 import retrofit2.HttpException
 import java.io.IOException
+import kotlin.coroutines.cancellation.CancellationException
 
 
 data class SearchUiState(
