@@ -15,8 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 @Composable
 fun DetailsScreen(
@@ -30,7 +32,18 @@ fun DetailsScreen(
         viewModel.loadGif(gifId)
     }
 
-    Column (
+    DetailsContent(
+        uiState = uiState,
+        onBack = onBack
+    )
+}
+
+@Composable
+fun DetailsContent(
+    uiState: DetailsUiState,
+    onBack: () -> Unit
+) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .safeDrawingPadding()
@@ -53,7 +66,7 @@ fun DetailsScreen(
             }
 
             uiState.gif != null -> {
-                val gif = uiState.gif!!
+                val gif = uiState.gif
 
                 Text(gif.title)
 
@@ -67,5 +80,18 @@ fun DetailsScreen(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DetailsContentPreview() {
+    MyApplicationTheme {
+        DetailsContent(
+            uiState = DetailsUiState(
+                isLoading = true
+            ),
+            onBack = {}
+        )
     }
 }

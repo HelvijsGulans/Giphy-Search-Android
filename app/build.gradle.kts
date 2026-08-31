@@ -79,4 +79,6 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
     implementation("io.coil-kt.coil3:coil-gif:3.3.0")
     implementation("androidx.navigation:navigation-compose:2.9.8")
+    implementation("io.insert-koin:koin-android:4.1.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.10.2")
 }

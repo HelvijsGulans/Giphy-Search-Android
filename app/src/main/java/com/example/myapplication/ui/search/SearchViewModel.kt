@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
+import retrofit2.HttpException
+import java.io.IOException
 
 
 data class SearchUiState(
@@ -57,8 +59,27 @@ class SearchViewModel(
 
             } catch (e: CancellationException){
                 throw e
-            } catch (e: Exception) {
+            } catch (e: HttpException) {
+                val message = when (e.code()) {
+                    401 -> "Invalid API key."
+                    429 -> "Too many requests. Please try again later."
+                    else -> "Server error (${e.code()})."
+                }
 
+                _uiState.value = _uiState.value.copy(
+                    gifs = emptyList(),
+                    isLoading = false,
+                    error = message
+                )
+            } catch (e: IOException) {
+                _uiState.value = _uiState.value.copy(
+                    gifs = emptyList(),
+                    isLoading = false,
+                    error = "No internet connection"
+                )
+            }
+
+            catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     gifs = emptyList(),
                     isLoading = false,
@@ -89,6 +110,11 @@ class SearchViewModel(
             )
             return
         }
+
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            error = null
+        )
 
         searchJob = viewModelScope.launch {
 

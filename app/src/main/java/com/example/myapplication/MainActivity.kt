@@ -13,21 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Button
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import com.example.myapplication.data.remote.RetrofitInstance
-import com.example.myapplication.data.repository.GifRepository
 import com.example.myapplication.ui.search.SearchViewModel
 
 import androidx.compose.runtime.collectAsState
@@ -42,32 +35,20 @@ import coil3.compose.AsyncImage
 import com.example.myapplication.ui.details.AppNavigation
 import com.example.myapplication.ui.details.DetailsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.collections.get
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.myapplication.ui.search.SearchUiState
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : ComponentActivity() {
+
+    private val searchViewModel: SearchViewModel by viewModel()
+    private val detailsViewModel: DetailsViewModel by viewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        val repository = GifRepository(RetrofitInstance.api)
-
-        val factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return SearchViewModel(repository) as T
-            }
-        }
-
-        val searchViewModel =
-            ViewModelProvider(this, factory)[SearchViewModel::class.java]
-
-        val detailsFactory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return DetailsViewModel(repository) as T
-            }
-        }
-
-        val detailsViewModel = ViewModelProvider(this, detailsFactory)[DetailsViewModel::class.java]
 
         setContent {
             MyApplicationTheme {
@@ -83,39 +64,63 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun SearchQuery (viewModel: SearchViewModel, onGifClick: (String) -> Unit) {
-
+fun SearchQuery(
+    viewModel: SearchViewModel,
+    onGifClick: (String) -> Unit
+) {
     val uiState by viewModel.uiState.collectAsState()
+
+    SearchContent(
+        uiState = uiState,
+        onQueryChanged = viewModel::onTextQueryChanged,
+        onGifClick = onGifClick,
+        onLoadMore = viewModel::loadMore
+    )
+}
+
+@Composable
+fun SearchContent(
+    uiState: SearchUiState,
+    onQueryChanged: (String) -> Unit,
+    onGifClick: (String) -> Unit,
+    onLoadMore: () -> Unit
+) {
     val gridState = rememberLazyGridState()
 
-
-    Column (
+    Column(
         modifier = Modifier
-        .fillMaxSize()
-        .safeDrawingPadding()
-        .padding(24.dp),
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         TextField(
             value = uiState.query,
-            onValueChange = {
-                viewModel.onTextQueryChanged(it)
-            },
+            onValueChange = onQueryChanged,
             label = {
                 Text("Search GIFs")
             }
         )
 
         if (uiState.isLoading) {
-
-            Text("Loading...")
+            CircularProgressIndicator(
+                modifier = Modifier.padding(16.dp)
+            )
         }
 
         uiState.error?.let {
             Text(it)
         }
 
-        Text("Loaded: ${uiState.gifs.size}")
+        if (
+            !uiState.isLoading &&
+            uiState.error == null &&
+            uiState.query.isNotBlank() &&
+            uiState.gifs.isEmpty()
+        ) {
+            Text("No GIFs found")
+        }
 
         LaunchedEffect(gridState) {
             snapshotFlow {
@@ -129,33 +134,58 @@ fun SearchQuery (viewModel: SearchViewModel, onGifClick: (String) -> Unit) {
                         lastVisibleIndex >= totalItems - 5
             }
                 .distinctUntilChanged()
-
                 .collect { shouldLoadMore ->
                     if (shouldLoadMore) {
-                        viewModel.loadMore()
+                        onLoadMore()
                     }
                 }
         }
 
         LazyVerticalGrid(
             state = gridState,
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.weight(1f).fillMaxWidth()
-
+            columns = GridCells.Adaptive(minSize = 140.dp),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
         ) {
             items(uiState.gifs) { gif ->
                 AsyncImage(
                     model = gif.images.fixedWidth.url,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f).clickable{onGifClick(gif.id)},
-                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clickable {
+                            onGifClick(gif.id)
+                        },
+                    contentDescription = gif.title,
                     contentScale = ContentScale.Crop
                 )
             }
-
         }
 
+        if (uiState.isLoadingMore) {
+            CircularProgressIndicator(
+                modifier = Modifier.padding(8.dp)
+            )
+        }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SearchContentPreview() {
+    MyApplicationTheme {
+        SearchContent(
+            uiState = SearchUiState(
+                query = "cats"
+            ),
+            onQueryChanged = {},
+            onGifClick = {},
+            onLoadMore = {}
+        )
     }
+}
+
 
 
 
